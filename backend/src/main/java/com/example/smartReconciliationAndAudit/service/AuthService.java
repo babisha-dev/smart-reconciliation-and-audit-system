@@ -13,7 +13,7 @@ public class AuthService {
     private final UserRepository userRepository;
 
     public String register(User user){
-if(userRepository.existsByEmail(user.getEmail())){
+if(userRepository.existsByName(user.getName())){
  throw new RuntimeException("User already exists");
 }
 User user1=User.builder()
@@ -29,7 +29,7 @@ return "User successfully registered.";
 
     }
     public LoginResponse login(LoginRequest req){
-       User user=userRepository.findByEmail(req.getEmail()).orElseThrow(()->new RuntimeException("User not found"));
+       User user=userRepository.findByName(req.getName()).orElseThrow(()->new RuntimeException("User not found"));
       // if(!passwordEncoder.matches(req.getPassword(),user.getPassword())){
           // throw new RuntimeException("Password didnot match");
      //  }
