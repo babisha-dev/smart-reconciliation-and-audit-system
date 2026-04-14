@@ -51,6 +51,7 @@ public class JwtUtil {
 
             String username=claims.getSubject();
             return username.equals(u.getUsername()) && claims.getExpiration().before(new Date());
+                    // with one persons token there is a chance  the other person can pass authentication so  it is a security attack prevention.
         }
         catch(Exception e){
             return false;
