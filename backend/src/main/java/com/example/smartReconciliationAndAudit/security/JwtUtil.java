@@ -1,5 +1,6 @@
 package com.example.smartReconciliationAndAudit.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -40,6 +41,22 @@ public class JwtUtil {
                 .getBody()
                 .getSubject();
   }
+  public Boolean validate(String  token, UserDetails u){
+        try{
+            Claims claims=Jwts.parserBuilder()
+                    .setSigningKey(key())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String username=claims.getSubject();
+            return username.equals(u.getUsername()) && claims.getExpiration().before(new Date());
+        }
+        catch(Exception e){
+            return false;
+        }
+  }
+
 
 
 }
