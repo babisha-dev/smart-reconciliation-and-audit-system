@@ -6,6 +6,7 @@ import com.example.smartReconciliationAndAudit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class DataInitializer implements CommandLineRunner { //spring runs this after application starts
     private final UserRepository userRepository;
+    private final PasswordEncoder encoder;
 
    @Override
     public void run(String... args) { //This is executed once at startup
@@ -27,7 +29,7 @@ public class DataInitializer implements CommandLineRunner { //spring runs this a
           userRepository.save(User.builder()
                   .name(name)
                           .email(email)
-                          .password(password)
+                          .password(encoder.encode(password))
                           .role(role)
                           .active(true)
                   .build());

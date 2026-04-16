@@ -37,7 +37,7 @@ http
         .cors(cors->cors.configurationSource(config()))
         .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth->auth
-        .requestMatchers("/api/auth/**","swagger-ui/**","api-docs/**").permitAll()
+        .requestMatchers("/api/auth/**","/swagger-ui/**","/api-docs/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/upload/**","/api/reconciliation/correct/**").hasAnyRole("ADMIN","ANALYST")
                         .anyRequest().authenticated()
