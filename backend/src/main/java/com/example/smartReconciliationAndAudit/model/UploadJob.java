@@ -13,28 +13,26 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UploadJob { @Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-private Long id;
-
+public class UploadJob {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
     private String fileName;
     private String fileHash;
-    private Long uploadedBy;
-    private String uploadedByUsername;
+    private long uploadedBy;
+    private String uploadedByName;
     private Integer totalRecords;
     private Integer processedRecords;
-
     @Enumerated(EnumType.STRING)
-    private UploadStatus status;
-
-    private String errorMessage;
-    private LocalDateTime startedAt;
+     private UploadStatus status;
+     private String errorMessage;
+    private LocalDateTime  startedAt;
     private LocalDateTime completedAt;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
-    protected void onCreate() { createdAt = LocalDateTime.now(); }
+    protected void onCreate(){createdAt=LocalDateTime.now();}
 
 }
