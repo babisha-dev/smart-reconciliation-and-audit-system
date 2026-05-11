@@ -4,7 +4,7 @@ import com.example.smartReconciliationAndAudit.model.AuditLog;
 import com.example.smartReconciliationAndAudit.repository.AuditLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuditService {
@@ -18,6 +18,11 @@ public class AuditService {
                       .source(source).oldValue(oldValue).newValue(newValue).build()
               );
    }
-
+public List<AuditLog> getAll(){
+      return auditLogRepository.findAllByOrderByTimestampDesc();
+}
+public List<AuditLog> getAllByEntity(String entityType, String entityId){
+      return auditLogRepository.findByEntityTypeAndEntityIDOrderByTimestampDesc(entityType,entityId);
+}
 
 }
