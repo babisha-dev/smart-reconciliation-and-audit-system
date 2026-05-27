@@ -25,7 +25,7 @@ public class TransactionRecord {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
      private long id;
-    private long transactionId;
+    private String transactionId;
     private LocalDate transactionDate;
 private BigDecimal amount;
 private String referenceNumber;

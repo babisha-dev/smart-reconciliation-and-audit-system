@@ -20,13 +20,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReconciliationResult {
     private long id;
-    private long transactionId;
+    private String transactionId;
     private long uploadJobId;
     private long uploadRecordId;
     private long systemRecordId;
 
     private BigDecimal uploadedAmount;
-    private BigDecimal systemRecord;
+    private BigDecimal systemAmount;
     private BigDecimal amountVariance;
 
     @Enumerated(EnumType.STRING)

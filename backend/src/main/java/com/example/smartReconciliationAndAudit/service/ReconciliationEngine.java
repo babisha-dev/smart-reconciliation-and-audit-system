@@ -3,17 +3,25 @@ package com.example.smartReconciliationAndAudit.service;
 import com.example.smartReconciliationAndAudit.enums.MatchStatus;
 import com.example.smartReconciliationAndAudit.model.ReconciliationResult;
 import com.example.smartReconciliationAndAudit.model.TransactionRecord;
+import com.example.smartReconciliationAndAudit.repository.ReconciliationResultRepository;
 import com.example.smartReconciliationAndAudit.repository.TransactionRecordRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ReconciliationEngine {
-public TransactionRecordRepository recordRepo;
+public final TransactionRecordRepository recordRepo;
+public final ReconciliationResultRepository resultRepo;
+
+@Value("${reconciliation.amount-variance}")
+private Integer variancePct;
     public void reconcile(long jobId){
 List<TransactionRecord> uploaded=recordRepo.findByUploadJobId(jobId);
 
@@ -52,10 +60,10 @@ else {
     if(rec.getAmount()!=null && sysRec!=null && sysRec.getAmount()!=null){
 variance=rec.getAmount().subtract(sysRec.getAmount()).abs();
     }
-    recordRepo.save(ReconciliationResult.builder()
+    resultRepo.save(ReconciliationResult.builder()
             .uploadJobId(jobId)
             .transactionId(rec.getTransactionId())
-            .uploadedJobId(rec.getId())
+            .uploadRecordId(rec.getId())
             .systemRecordId(sysRec != null ? sysRec.getId() : null)
             .matchStatus(status)
             .uploadedAmount(rec.getAmount())
@@ -72,6 +80,24 @@ catch (Exception e) {
 }
     }
     public boolean   withinVariance(BigDecimal uploaded, BigDecimal system){
-
+       if(uploaded ==null || system== null)
+           return false;
+   BigDecimal allowed=system.multiply(BigDecimal.valueOf(variancePct/100));
+   return uploaded.subtract(system).abs().compareTo(allowed)<=0;
     }
+    private boolean amountEquals(BigDecimal a, BigDecimal b){
+        return a!=null && b!= null && a.compareTo(b)==0;
+    }
+    private String mismatchField(TransactionRecord a, TransactionRecord b){
+List<String> list=new ArrayList<>();
+if(!amountEquals(a.getAmount(),b.getAmount())){
+    list.add("amount");
 }
+if(Objects.equals(a.getTransactionDate(),b.getTransactionDate())){
+    list.add("transaction date");
+        }
+        return String.join("," , list);
+    }
+
+}
+
