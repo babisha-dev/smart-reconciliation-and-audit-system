@@ -19,4 +19,7 @@ for(Byte b:hash) {
 return sb.toString();
 
     }
+public byte[] readBytes(MultipartFile file)throws  Exception{
+        return file.getBytes();
+}
 }
