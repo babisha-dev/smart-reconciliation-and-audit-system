@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.MessageDigest;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -17,9 +19,23 @@ for(Byte b:hash) {
     sb.append(String.format("%02x", b));
 }
 return sb.toString();
-
     }
 public byte[] readBytes(MultipartFile file)throws  Exception{
         return file.getBytes();
 }
+
+public List<Map<String,String>> preview(MultipartFile file) throws Exception{
+        byte[] bytes= file.getBytes();
+        return isCsv(file) ? previewCsv(file):previewExcel(file);
+}
+public boolean isCsv(MultipartFile file) {
+       return true;
+}
+public List<Map<String,String>> previewCsv(MultipartFile file){
+
+}
+public  List<Map<String,String>> previewExcel(MultipartFile file) {
+
+}
+
 }
