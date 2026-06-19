@@ -14,11 +14,11 @@ public class FileProcessingService {
 
     public String hash(MultipartFile file) throws Exception{
         byte[] hash= MessageDigest.getInstance("SHA-256").digest(file.getBytes());
-StringBuilder sb=new StringBuilder();
-for(Byte b:hash) {
+      StringBuilder sb=new StringBuilder();
+    for(Byte b:hash) {
     sb.append(String.format("%02x", b));
 }
-return sb.toString();
+     return sb.toString();
     }
 public byte[] readBytes(MultipartFile file)throws  Exception{
         return file.getBytes();
@@ -26,9 +26,13 @@ public byte[] readBytes(MultipartFile file)throws  Exception{
 
 public List<Map<String,String>> preview(MultipartFile file) throws Exception{
         byte[] bytes= file.getBytes();
-        return isCsv(file) ? previewCsv(file):previewExcel(file);
+        return isCsv(bytes) ? previewCsv(file):previewExcel(file);
 }
-public boolean isCsv(MultipartFile file) {
+public boolean isCsv(byte[] bytes) {
+        if(bytes.length < 2)
+            return true;
+        if(bytes[0]==0x50 && bytes[1]==0x4B) return  false;
+        if((bytes[0]&0xFF) ==0xD0 &&((bytes[0]&0xFF) == 0xCF)) return false;
        return true;
 }
 public List<Map<String,String>> previewCsv(MultipartFile file){
