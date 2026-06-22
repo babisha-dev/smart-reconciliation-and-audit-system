@@ -90,7 +90,15 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- opencsv -->
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>5.8</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
+
 
 	<build>
 		<plugins>
