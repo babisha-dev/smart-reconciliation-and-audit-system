@@ -3,6 +3,7 @@ import com.opencsv.CSVReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.apache.poi.ss.usermodel.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -58,8 +59,27 @@ public List<Map<String,String>> previewCsv(byte[] bytes) throws Exception {
 return rows;
 
 }
-public  List<Map<String,String>> previewExcel(MultipartFile file) {
+public  List<Map<String,String>> previewExcel(byte[] bytes)throws Exception {
+     List<Map<String,String>>  rows=new ArrayList<>();
+    try(Workbook wb= WorkbookFactory.create(new ByteArrayInputStream(bytes))){
+      Sheet sheet=wb.getSheetAt(0);
+       Row headerrow=sheet.getRow(0);
+  if(headerrow ==null) return rows;
+List<String> headers=new ArrayList<>();
+headers.forEach(c->headers.add(c.toString().trim()));
+for(int i=1;i<Math.min(20,sheet.getLastRowNum());i++){
+Row row=sheet.getRow(i);
+if(row==null) continue;
+Map<String,String> rowmap=new LinkedHashMap<>();
+for(int j=0;j<headers.size();j++){
+Cell cell=row.getCell(j);
+rowmap.put(headers.get(j),cell!=null?cell.toString():"");
+}
+rows.add(rowmap);
+    }
 
+}
+    return rows;
 }
 
 }
