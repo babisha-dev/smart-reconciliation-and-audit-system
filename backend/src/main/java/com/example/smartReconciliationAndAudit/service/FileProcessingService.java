@@ -64,22 +64,37 @@ public  List<Map<String,String>> previewExcel(byte[] bytes)throws Exception {
     try(Workbook wb= WorkbookFactory.create(new ByteArrayInputStream(bytes))){
       Sheet sheet=wb.getSheetAt(0);
        Row headerrow=sheet.getRow(0);
-  if(headerrow ==null) return rows;
-List<String> headers=new ArrayList<>();
-headers.forEach(c->headers.add(c.toString().trim()));
-for(int i=1;i<Math.min(20,sheet.getLastRowNum());i++){
-Row row=sheet.getRow(i);
-if(row==null) continue;
-Map<String,String> rowmap=new LinkedHashMap<>();
-for(int j=0;j<headers.size();j++){
-Cell cell=row.getCell(j);
-rowmap.put(headers.get(j),cell!=null?cell.toString():"");
+     if(headerrow ==null) return rows;
+         List<String> headers=new ArrayList<>();
+        headers.forEach(c->headers.add(c.toString().trim()));
+    for(int i=1;i<Math.min(20,sheet.getLastRowNum());i++){
+             Row row=sheet.getRow(i);
+        if(row==null) continue;
+          Map<String,String> rowmap=new LinkedHashMap<>();
+       for(int j=0;j<headers.size();j++){
+           Cell cell=row.getCell(j);
+             rowmap.put(headers.get(j),cell!=null?cell.toString():"");
 }
-rows.add(rowmap);
+           rows.add(rowmap);
     }
 
 }
     return rows;
 }
+public List<Map<String,String>> parseCsvBytes(byte[] bytes) throws Exception{
+     List<Map<String,String>> rows=new ArrayList<>();
+     try(CSVReader reader=new CSVReader(new InputStreamReader(new ByteArrayInputStream(bytes)))){
+      String[] header=reader.readNext();
+      if(header ==null) return rows;
+      String[] line;
+      while((line=reader.readNext())!=null){
+          Map<String,String> row=new LinkedHashMap<>();
+          for(int i=0;i<header.length;i++){
+              row.put(header[i].trim(),i<line.length?line[i]:"");
+          }
+          rows.add(row);
+      }
+     }
+    }
 
 }
