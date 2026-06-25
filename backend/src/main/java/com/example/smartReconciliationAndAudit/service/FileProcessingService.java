@@ -118,5 +118,13 @@ public List<Map<String,String>> parseCsvBytes(byte[] bytes) throws Exception{
         }
         return rows;
     }
+    private String get(Map<String, String> row, Map<String, String> mapping, String key, String fallback) {
+        String col = mapping.get(key);
+        if (col != null && row.containsKey(col)) return row.get(col);
+        if (row.containsKey(fallback)) return row.get(fallback);
+        for (var e : row.entrySet())
+            if (e.getKey().equalsIgnoreCase(fallback)) return e.getValue();
+        return null;
+    }
 
 }
