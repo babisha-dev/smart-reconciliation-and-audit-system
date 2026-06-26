@@ -1,6 +1,13 @@
 package com.example.smartReconciliationAndAudit.service;
+import com.example.smartReconciliationAndAudit.enums.UploadStatus;
+import com.example.smartReconciliationAndAudit.model.TransactionRecord;
+import com.example.smartReconciliationAndAudit.model.UploadJob;
+import com.example.smartReconciliationAndAudit.repository.TransactionRecordRepository;
+import com.example.smartReconciliationAndAudit.repository.UploadJobRepository;
 import com.opencsv.CSVReader;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.poi.ss.usermodel.*;
@@ -10,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.MessageDigest;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,8 +25,11 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FileProcessingService {
-
+    final UploadJobRepository jobRepo;
+    final TransactionRecordRepository recordrepo;
+    final ReconciliationEngine engine;
     public String hash(MultipartFile file) throws Exception{
         byte[] hash= MessageDigest.getInstance("SHA-256").digest(file.getBytes());
       StringBuilder sb=new StringBuilder();
@@ -118,6 +129,56 @@ public List<Map<String,String>> parseCsvBytes(byte[] bytes) throws Exception{
         }
         return rows;
     }
+    @Async
+    private void processAsync(Long jobId, byte[] bytes,Map<String,String> mapping, String userId, String username){
+        UploadJob job = jobRepo.findById(jobId).orElseThrow();
+        try{
+            job.setStatus(UploadStatus.PROCESSING);
+            job.setStartedAt(LocalDateTime.now());
+            jobRepo.save(job);
+            List<Map<String,String>> allRows=isCsv(bytes) ? parseCsvBytes(bytes) : parseExcelBytes(bytes);
+
+            log.info("job {} - parsed rows {} ",jobId,allRows.size());
+            job.setTotalRecords(allRows.size());
+            jobRepo.save(job);
+
+            int saved=0;
+            for(Map<String,String> row: allRows) {
+                try {
+                    TransactionRecord rec = toRecord(row, mapping, jobId);
+                    if (rec.getTransactionId() == null || rec.getTransactionId().isBlank()) continue;
+                    recordrepo.save(rec);
+                    saved++;
+                    if (saved % 500 == 0) {
+                        job.setProcessedRecords(saved);
+                        jobRepo.save(job);
+                    }
+                }
+                catch (Exception e){
+                 log.warn("skipping bad rows{}",e.getMessage());
+                }
+            }
+            job.setProcessedRecords(saved);
+            jobRepo.save(job);
+            log.info("job-{} saved {} record",jobId,saved);
+            engine.reconcile(jobId);
+            job.setStatus(UploadStatus.COMPLETED);
+            job.setCompletedAt(LocalDateTime.now());
+            jobRepo.save(job);
+            log.info("job {}- completed", jobId);
+
+        }
+        catch (Exception e){
+        log.error("job {} failed, {}", jobId,e.getMessage());
+        job.setStatus(UploadStatus.FAILED);
+        job.setCompletedAt(LocalDateTime.now());
+        jobRepo.save(job);
+
+
+        }
+    }
+
+
     private String get(Map<String, String> row, Map<String, String> mapping, String key, String fallback) {
         String col = mapping.get(key);
         if (col != null && row.containsKey(col)) return row.get(col);
