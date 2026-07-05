@@ -16,8 +16,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.security.MessageDigest;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -177,14 +180,38 @@ public List<Map<String,String>> parseCsvBytes(byte[] bytes) throws Exception{
 
         }
     }
+private TransactionRecord toRecord(Map<String , String > row, Map<String,String> mapping, Long jobId) {
+    String txnId = get(row, mapping, "transactionId", "Transaction Id");
+    String amtStr = get(row, mapping, "amount", "Amount");
+    String ref = get(row, mapping, "referenceNumber", "Reference Number");
+    String date = get(row, mapping, "date", "Date");
+    String desc = get(row, mapping, "description", "Description");
 
+    BigDecimal amount = null;
+    if (amtStr != null && amtStr.isBlank()) {
+        try {
+            amount = new BigDecimal(amtStr.replaceAll("[^0-9.]", ""));
+        } catch (Exception Ignored) {}
 
+    }
+    LocalDate txnDate=null;
+    if(date!=null && date.isBlank()){
+        for(String fmt:new String[]{"yyyy-MM-dd","MM/dd/yyyy","dd-MM-yyyy","dd/MM/yyyy","M/d/yyyy","d/M/yyyy"}){
+        try{txnDate=LocalDate.parse(date, DateTimeFormatter.ofPattern(fmt));}
+        catch (Exception Ignored){}
+        }
+    }
+    return TransactionRecord.builder().transactionId(txnId).amount(amount)
+            .referenceNumber(ref)
+            .description(desc)
+            .uploadJobId(jobId).isSystemRecord(false).build();
+}
     private String get(Map<String,String> row, Map<String,String> mapping, String key,String fallback){
         String col=mapping.get(key);
         if(col!=null && row.containsKey(col)) return row.get(col);
         if(row.containsKey(fallback)) return row.get(fallback);
         for(var e: row.entrySet()){
-            e.getKey().equalsIgnoreCase(fallback)
+          if(e.getKey().equalsIgnoreCase(fallback))
                     return e.getValue();
         }
         return null;
