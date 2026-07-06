@@ -74,4 +74,10 @@ return ResponseEntity.ok(ApiResponse.ok("Processing started", job));
     public ResponseEntity<ApiResponse<List<UploadJob>>> jobList(){
 return ResponseEntity.ok(ApiResponse.ok(uploadJobRepo.findByOrderByCreatedAtDesc()));
     }
+    @GetMapping("/jobs/{id}")
+    @Operation(summary = "Get status of specific upload job")
+    public  ResponseEntity<ApiResponse<UploadJob>>job(@PathVariable Long id){
+        return uploadJobRepo.findById(id).map(j->ResponseEntity.ok(ApiResponse.ok(j)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
