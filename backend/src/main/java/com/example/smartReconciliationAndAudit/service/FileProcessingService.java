@@ -133,7 +133,7 @@ public List<Map<String,String>> parseCsvBytes(byte[] bytes) throws Exception{
         return rows;
     }
     @Async
-    private void processAsync(Long jobId, byte[] bytes,Map<String,String> mapping, String userId, String username){
+    public  void processAsync(Long jobId, byte[] bytes,Map<String,String> mapping, String userId, String username){
         UploadJob job = jobRepo.findById(jobId).orElseThrow();
         try{
             job.setStatus(UploadStatus.PROCESSING);
