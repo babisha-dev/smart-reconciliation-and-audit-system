@@ -13,14 +13,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import  com.example.smartReconciliationAndAudit.enums.MatchStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import lombok.Builder;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
+
+import static org.apache.poi.ss.formula.functions.StatsLib.var;
 
 @RestController
 @RequestMapping("api/reconciliation")
@@ -53,5 +52,12 @@ public class ReconciliationController {
     @Operation(summary="results of specific upload job")
     public  ResponseEntity<ApiResponse<List<ReconciliationResult>>> resultByID(@PathVariable Long jobId){
         return ResponseEntity.ok(ApiResponse.ok(resultRepo.findByUploadJobId(jobId)));
+    }
+    @GetMapping("/results")
+    @Operation(summary = "All results, optionally filtered by status")
+    public ResponseEntity<ApiResponse<List<ReconciliationResult>>> results(@RequestParam(required = false) String status){
+     var data=(status!=null) ? resultRepo.findByMatchStatus(MatchStatus.valueOf(status.toUpperCase()) ): resultRepo.findAll();
+     return  ResponseEntity.ok(ApiResponse.ok(data));
+
     }
 }

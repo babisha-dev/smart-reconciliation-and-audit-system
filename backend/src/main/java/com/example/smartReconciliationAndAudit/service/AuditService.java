@@ -10,7 +10,11 @@ import java.util.List;
 public class AuditService {
    final AuditLogRepository auditLogRepository;
 
-   public void log(String entityType , Long entityId, String action, String performedBy, String performedByUsername, String oldValue, String newValue, String source){
+    public AuditService(AuditLogRepository auditLogRepository) {
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    public void log(String entityType , Long entityId, String action, String performedBy, String performedByUsername, String oldValue, String newValue, String source){
 
       auditLogRepository.save(AuditLog.builder()
                       .entityType(entityType).entityId(entityId)

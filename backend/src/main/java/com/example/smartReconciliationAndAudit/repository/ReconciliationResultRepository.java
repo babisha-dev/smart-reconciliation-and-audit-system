@@ -11,4 +11,5 @@ public interface ReconciliationResultRepository extends JpaRepository<Reconcilia
 
 
     List<ReconciliationResult> findByUploadJobId(Long uploadJobId);
+    List<ReconciliationResult> findByMatchStatus(MatchStatus status);
 }
